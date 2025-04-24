@@ -2,6 +2,7 @@ import type React from "react"
 import "./globals.css"
 import Script from "next/script"
 import { ThemeProvider } from "../components/theme-provider"
+import { AuthProvider } from "@/contexts/auth-context"
 
 // Importar los metadatos base
 import { baseMetadata } from "./metadata"
@@ -45,8 +46,10 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-          {children}
-          <ScrollToTop />
+          <AuthProvider>
+            {children}
+            <ScrollToTop />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
