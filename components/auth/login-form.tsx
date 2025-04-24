@@ -2,30 +2,28 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
-export default function LoginForm() {
+interface LoginFormProps {
+  initialError?: string | null
+  initialSuccess?: string | null
+  redirectPath?: string | null
+}
+
+export default function LoginForm({ initialError = null, initialSuccess = null, redirectPath = null }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(initialError)
+  const [success, setSuccess] = useState<string | null>(initialSuccess)
   const [isLoading, setIsLoading] = useState(false)
   const { signIn } = useAuth()
   const router = useRouter()
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    // Mostrar mensaje si el usuario se acaba de registrar
-    if (searchParams?.get("registered") === "true") {
-      setSuccess("Registro exitoso. Ahora puedes iniciar sesión.")
-    }
-  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,7 +40,7 @@ export default function LoginForm() {
       }
 
       if (success) {
-        router.push("/dashboard")
+        router.push(redirectPath || "/dashboard")
       }
     } catch (err) {
       setError("Ocurrió un error inesperado")
