@@ -11,42 +11,63 @@ import { Input } from "@/components/ui/input"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 interface LoginFormProps {
-  initialError?: string | null
-  initialSuccess?: string | null
-  redirectPath?: string | null
+  showRegisteredMessage?: boolean
+  redirectTo?: string
 }
 
-export default function LoginForm({ initialError = null, initialSuccess = null, redirectPath = null }: LoginFormProps) {
+export default function LoginForm({ showRegisteredMessage = false, redirectTo = "/dashboard" }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(initialError)
-  const [success, setSuccess] = useState<string | null>(initialSuccess)
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    showRegisteredMessage ? "¡Registro exitoso! Ahora puedes iniciar sesión." : null,
+  )
   const { signIn } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setSuccess(null)
+    setSuccessMessage(null)
     setIsLoading(true)
+
+    // Verificar si son las credenciales de administrador
+    if (email === "admin" && password === "admin") {
+      // Simular un pequeño retraso para dar feedback visual
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      localStorage.setItem("adminSession", "true")
+      router.push(redirectTo)
+      return
+    }
 
     try {
       const { error, success } = await signIn(email, password)
 
       if (error) {
-        setError(error.message || "Credenciales inválidas")
+        console.error("Error de inicio de sesión:", error)
+        setError(error.message || "Credenciales incorrectas")
         return
       }
 
       if (success) {
-        router.push(redirectPath || "/dashboard")
+        router.push(redirectTo)
       }
     } catch (err) {
-      setError("Ocurrió un error inesperado")
+      console.error("Error inesperado:", err)
+      setError("Ocurrió un error inesperado. Por favor, intente más tarde.")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleGuestLogin = () => {
+    setIsLoading(true)
+    // Simular un pequeño retraso para dar feedback visual
+    setTimeout(() => {
+      localStorage.setItem("guestSession", "true")
+      router.push(redirectTo)
+    }, 500)
   }
 
   return (
@@ -57,18 +78,19 @@ export default function LoginForm({ initialError = null, initialSuccess = null, 
       </div>
 
       {error && <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
-
-      {success && <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded">{success}</div>}
+      {successMessage && (
+        <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded">{successMessage}</div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
-            Email
+            Email o Usuario
           </label>
           <Input
             id="email"
-            type="email"
-            placeholder="tu@email.com"
+            type="text"
+            placeholder="tu@email.com o admin"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -91,6 +113,18 @@ export default function LoginForm({ initialError = null, initialSuccess = null, 
           {isLoading ? <LoadingSpinner size="sm" /> : "Iniciar sesión"}
         </Button>
       </form>
+
+      <div className="flex flex-col space-y-2">
+        <Button variant="outline" onClick={handleGuestLogin} disabled={isLoading} className="w-full">
+          {isLoading ? <LoadingSpinner size="sm" /> : "Entrar como invitado"}
+        </Button>
+        <div className="text-center text-sm">
+          <p className="text-gray-500 dark:text-gray-400 mb-1">Credenciales de administrador:</p>
+          <p className="font-mono bg-gray-100 dark:bg-gray-700 p-1 rounded text-xs">
+            Usuario: <span className="font-bold">admin</span> | Contraseña: <span className="font-bold">admin</span>
+          </p>
+        </div>
+      </div>
 
       <div className="text-center text-sm">
         ¿No tienes una cuenta?{" "}

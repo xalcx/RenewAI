@@ -27,6 +27,7 @@ export default function RegisterForm() {
       const { error, success } = await signUp(email, password)
 
       if (error) {
+        console.error("Error de registro:", error)
         setError(error.message || "Error al registrarse")
         return
       }
@@ -35,7 +36,8 @@ export default function RegisterForm() {
         router.push("/login?registered=true")
       }
     } catch (err) {
-      setError("Ocurrió un error inesperado")
+      console.error("Error inesperado:", err)
+      setError("Ocurrió un error inesperado. Por favor, intente más tarde.")
     } finally {
       setIsLoading(false)
     }
