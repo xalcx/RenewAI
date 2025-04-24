@@ -23,12 +23,26 @@ export default function RegisterForm() {
     setError(null)
     setIsLoading(true)
 
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres")
+      setIsLoading(false)
+      return
+    }
+
     try {
       const { error, success } = await signUp(email, password)
 
       if (error) {
         console.error("Error de registro:", error)
-        setError(error.message || "Error al registrarse")
+
+        // Mensajes de error más amigables
+        if (error.message?.includes("fetch")) {
+          setError(
+            "No se pudo conectar con el servidor de autenticación. Por favor, verifique su conexión a internet e intente nuevamente.",
+          )
+        } else {
+          setError(error.message || "Error al registrarse")
+        }
         return
       }
 
@@ -79,6 +93,7 @@ export default function RegisterForm() {
             required
             minLength={6}
           />
+          <p className="text-xs text-gray-500">La contraseña debe tener al menos 6 caracteres</p>
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? <LoadingSpinner size="sm" /> : "Registrarse"}
@@ -90,6 +105,17 @@ export default function RegisterForm() {
         <Link href="/login" className="text-blue-600 hover:underline">
           Iniciar sesión
         </Link>
+      </div>
+
+      <div className="text-center text-xs p-2 bg-blue-50 dark:bg-blue-900/30 rounded-md">
+        <p>
+          <strong>Nota:</strong> Si tienes problemas para registrarte, puedes usar las credenciales predefinidas:
+        </p>
+        <p className="mt-1">
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Ir a iniciar sesión
+          </Link>
+        </p>
       </div>
     </div>
   )

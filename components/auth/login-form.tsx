@@ -32,15 +32,6 @@ export default function LoginForm({ showRegisteredMessage = false, redirectTo = 
     setSuccessMessage(null)
     setIsLoading(true)
 
-    // Verificar si son las credenciales de administrador
-    if (email === "admin" && password === "admin") {
-      // Simular un pequeño retraso para dar feedback visual
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      localStorage.setItem("adminSession", "true")
-      router.push(redirectTo)
-      return
-    }
-
     try {
       const { error, success } = await signIn(email, password)
 
@@ -61,13 +52,14 @@ export default function LoginForm({ showRegisteredMessage = false, redirectTo = 
     }
   }
 
-  const handleGuestLogin = () => {
-    setIsLoading(true)
-    // Simular un pequeño retraso para dar feedback visual
-    setTimeout(() => {
-      localStorage.setItem("guestSession", "true")
-      router.push(redirectTo)
-    }, 500)
+  const fillAdminCredentials = () => {
+    setEmail("admin")
+    setPassword("admin")
+  }
+
+  const fillGuestCredentials = () => {
+    setEmail("invitado")
+    setPassword("invitado")
   }
 
   return (
@@ -90,7 +82,7 @@ export default function LoginForm({ showRegisteredMessage = false, redirectTo = 
           <Input
             id="email"
             type="text"
-            placeholder="tu@email.com o admin"
+            placeholder="tu@email.com o usuario"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -114,15 +106,17 @@ export default function LoginForm({ showRegisteredMessage = false, redirectTo = 
         </Button>
       </form>
 
-      <div className="flex flex-col space-y-2">
-        <Button variant="outline" onClick={handleGuestLogin} disabled={isLoading} className="w-full">
-          {isLoading ? <LoadingSpinner size="sm" /> : "Entrar como invitado"}
-        </Button>
+      <div className="flex flex-col space-y-4">
         <div className="text-center text-sm">
-          <p className="text-gray-500 dark:text-gray-400 mb-1">Credenciales de administrador:</p>
-          <p className="font-mono bg-gray-100 dark:bg-gray-700 p-1 rounded text-xs">
-            Usuario: <span className="font-bold">admin</span> | Contraseña: <span className="font-bold">admin</span>
-          </p>
+          <p className="text-gray-500 dark:text-gray-400 mb-2">Accesos rápidos:</p>
+          <div className="flex flex-col space-y-2">
+            <Button variant="outline" onClick={fillAdminCredentials} size="sm" className="text-xs">
+              Usar credenciales de administrador (admin/admin)
+            </Button>
+            <Button variant="outline" onClick={fillGuestCredentials} size="sm" className="text-xs">
+              Usar credenciales de invitado (invitado/invitado)
+            </Button>
+          </div>
         </div>
       </div>
 

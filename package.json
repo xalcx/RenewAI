@@ -62,8 +62,8 @@
     "chart.js": "latest",
     "framer-motion": "latest",
     "leaflet": "latest",
-    "@supabase/supabase-js": "latest",
-    "react-chartjs-2": "latest"
+    "react-chartjs-2": "latest",
+    "@supabase/supabase-js": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
