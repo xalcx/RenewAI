@@ -2,13 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Bell, Home, Search, X } from "lucide-react"
+import { Bell, Home, Search, Settings, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { useAuth } from "@/contexts/auth-context"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,133 +14,121 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/contexts/auth-context"
+import { LogoutButton } from "@/components/auth/logout-button"
 
 export function DashboardHeader() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { user, firebaseUser, signOut } = useAuth()
-  const router = useRouter()
+  const { user } = useAuth()
 
-  // Obtener información del usuario (Firebase o Supabase)
-  const displayName = firebaseUser?.displayName || user?.email || "Usuario"
-  const userEmail = firebaseUser?.email || user?.email || ""
-  const photoURL = firebaseUser?.photoURL || null
-
-  // Iniciales para el avatar fallback
-  const getInitials = (name: string) => {
-    return name
+  // Función para obtener las iniciales del nombre del usuario
+  const getUserInitials = () => {
+    if (!user || !user.displayName) return "U"
+    return user.displayName
       .split(" ")
-      .map((n) => n[0])
+      .map((name) => name[0])
       .join("")
       .toUpperCase()
       .substring(0, 2)
   }
 
-  const handleSignOut = async () => {
-    await signOut()
-    router.push("/")
-  }
-
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6">
-      <div className="flex items-center gap-2 lg:gap-4">
-        {/* Botón para volver a home */}
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b bg-background px-4 md:px-6">
+      <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" asChild className="mr-2">
           <Link href="/" aria-label="Volver a la página principal">
             <Home className="h-5 w-5" />
           </Link>
         </Button>
-
+        <h1 className="text-lg font-semibold md:text-xl">RenewAI Dashboard</h1>
+      </div>
+      <div className="flex items-center gap-2">
         {isSearchOpen ? (
-          <div className="flex items-center gap-2">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Buscar..."
-              className="w-[150px] sm:w-[200px] md:w-[300px] lg:w-[400px]"
+              className="w-full rounded-md border pl-8 md:w-[300px]"
               autoFocus
+              onBlur={() => setIsSearchOpen(false)}
             />
-            <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)}>
-              <X className="h-5 w-5" />
-            </Button>
           </div>
         ) : (
-          <Button variant="outline" size="icon" onClick={() => setIsSearchOpen(true)} className="md:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
             <Search className="h-5 w-5" />
+            <span className="sr-only">Buscar</span>
           </Button>
         )}
-        <div className={`hidden md:flex items-center gap-2 ${isSearchOpen ? "hidden" : "block"}`}>
-          <Input
-            type="search"
-            placeholder="Buscar proyectos, alertas, informes..."
-            className="w-[200px] lg:w-[300px]"
-          />
-          <Button variant="outline" size="icon">
-            <Search className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[10px] text-white">
-                3
-              </span>
+              <span className="sr-only">Notificaciones</span>
+              <span className="absolute right-1 top-1 flex h-2 w-2 rounded-full bg-primary"></span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[300px]">
+          <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="max-h-[300px] overflow-auto">
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                <div className="font-medium">Alerta de mantenimiento</div>
-                <div className="text-sm text-muted-foreground">La turbina #42 requiere mantenimiento preventivo.</div>
-                <div className="text-xs text-muted-foreground">Hace 10 minutos</div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                <div className="font-medium">Nuevo proyecto disponible</div>
-                <div className="text-sm text-muted-foreground">
-                  Se ha añadido un nuevo proyecto en tu área de interés.
+              <div className="flex items-start gap-4 p-3 hover:bg-muted">
+                <span className="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-primary"></span>
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Nueva alerta de mantenimiento</p>
+                  <p className="text-xs text-muted-foreground">Turbina #42 requiere revisión</p>
+                  <p className="text-xs text-muted-foreground">Hace 5 minutos</p>
                 </div>
-                <div className="text-xs text-muted-foreground">Hace 2 horas</div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                <div className="font-medium">Actualización de sistema</div>
-                <div className="text-sm text-muted-foreground">
-                  Nueva versión de RenewAI disponible con mejoras de rendimiento.
+              </div>
+              <div className="flex items-start gap-4 p-3 hover:bg-muted">
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Optimización completada</p>
+                  <p className="text-xs text-muted-foreground">Parque eólico norte optimizado</p>
+                  <p className="text-xs text-muted-foreground">Hace 2 horas</p>
                 </div>
-                <div className="text-xs text-muted-foreground">Hace 1 día</div>
-              </DropdownMenuItem>
+              </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="justify-center font-medium">Ver todas las notificaciones</DropdownMenuItem>
+            <Button variant="ghost" className="w-full justify-center" size="sm">
+              Ver todas
+            </Button>
           </DropdownMenuContent>
         </DropdownMenu>
-        <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="rounded-full">
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Configuración</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>Configuración</DropdownMenuItem>
+            <DropdownMenuItem>Preferencias</DropdownMenuItem>
+            <DropdownMenuItem>Ayuda</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
-                {photoURL ? (
-                  <AvatarImage src={photoURL || "/placeholder.svg"} alt={displayName} />
-                ) : (
-                  <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-                )}
+                <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || "Usuario"} />
+                <AvatarFallback>{getUserInitials()}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex flex-col items-start gap-1">
-              <div className="font-medium">{displayName}</div>
-              <div className="text-xs text-muted-foreground">{userEmail}</div>
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              <span>Perfil</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Configuración</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Perfil</DropdownMenuItem>
-            <DropdownMenuItem>Configuración</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>Cerrar sesión</DropdownMenuItem>
+            <LogoutButton />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

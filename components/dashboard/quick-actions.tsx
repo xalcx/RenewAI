@@ -1,146 +1,143 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Plus, FileText, AlertTriangle, Download, Share2 } from "lucide-react"
+import Link from "next/link"
+import { AlertCircle, BarChart3, Download, FileText, Plus, RefreshCw, Settings, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { toast } from "@/components/ui/use-toast"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
 
 export function QuickActions() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState<string | null>(null)
+  const { toast } = useToast()
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({})
 
-  const handleAction = async (action: string, route?: string) => {
-    setIsLoading(action)
+  const setLoading = (key: string, isLoading: boolean) => {
+    setLoadingStates((prev) => ({ ...prev, [key]: isLoading }))
+  }
+
+  const handleAction = async (key: string, message: string) => {
+    setLoading(key, true)
 
     try {
       // Simulamos una acción asíncrona
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      if (route) {
-        router.push(route)
-      } else {
-        // Acciones específicas según el botón
-        switch (action) {
-          case "nuevo-proyecto":
-            toast({
-              title: "Nuevo proyecto",
-              description: "Formulario de nuevo proyecto abierto",
-            })
-            break
-          case "generar-informe":
-            toast({
-              title: "Informe generado",
-              description: "El informe se ha generado correctamente",
-            })
-            break
-          case "crear-alerta":
-            toast({
-              title: "Nueva alerta",
-              description: "Configuración de alerta iniciada",
-            })
-            break
-          case "exportar-datos":
-            toast({
-              title: "Exportación iniciada",
-              description: "Los datos se están exportando",
-            })
-            break
-          case "compartir-dashboard":
-            toast({
-              title: "Compartir dashboard",
-              description: "Opciones de compartir abiertas",
-            })
-            break
-          default:
-            toast({
-              title: "Acción ejecutada",
-              description: `Has ejecutado la acción: ${action}`,
-            })
-        }
-      }
+      toast({
+        title: "Acción completada",
+        description: message,
+      })
     } catch (error) {
-      console.error(`Error al ejecutar la acción ${action}:`, error)
       toast({
         title: "Error",
-        description: "No se pudo completar la acción",
+        description: "No se pudo completar la acción. Inténtalo de nuevo.",
         variant: "destructive",
       })
     } finally {
-      setIsLoading(null)
+      setLoading(key, false)
     }
   }
 
   return (
-    <div className="space-y-4">
-      <Button
-        className="w-full justify-start"
-        onClick={() => handleAction("nuevo-proyecto")}
-        disabled={isLoading === "nuevo-proyecto"}
-      >
-        {isLoading === "nuevo-proyecto" ? (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : (
-          <Plus className="mr-2 h-4 w-4" />
-        )}
-        Nuevo Proyecto
-      </Button>
+    <Card>
+      <CardHeader>
+        <CardTitle>Acciones rápidas</CardTitle>
+        <CardDescription>Accede rápidamente a las funciones más utilizadas</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+        <Button
+          variant="outline"
+          className="flex h-24 flex-col items-center justify-center gap-1"
+          onClick={() => handleAction("newProject", "Nuevo proyecto creado")}
+          disabled={loadingStates["newProject"]}
+        >
+          {loadingStates["newProject"] ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+          <span className="text-xs">Nuevo proyecto</span>
+        </Button>
 
-      <Button
-        variant="outline"
-        className="w-full justify-start"
-        onClick={() => handleAction("generar-informe", "/dashboard/reports")}
-        disabled={isLoading === "generar-informe"}
-      >
-        {isLoading === "generar-informe" ? (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : (
-          <FileText className="mr-2 h-4 w-4" />
-        )}
-        Generar Informe
-      </Button>
+        <Button
+          variant="outline"
+          className="flex h-24 flex-col items-center justify-center gap-1"
+          onClick={() => handleAction("generateReport", "Informe generado correctamente")}
+          disabled={loadingStates["generateReport"]}
+        >
+          {loadingStates["generateReport"] ? (
+            <RefreshCw className="h-5 w-5 animate-spin" />
+          ) : (
+            <FileText className="h-5 w-5" />
+          )}
+          <span className="text-xs">Generar informe</span>
+        </Button>
 
-      <Button
-        variant="outline"
-        className="w-full justify-start"
-        onClick={() => handleAction("crear-alerta", "/dashboard/alerts")}
-        disabled={isLoading === "crear-alerta"}
-      >
-        {isLoading === "crear-alerta" ? (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : (
-          <AlertTriangle className="mr-2 h-4 w-4" />
-        )}
-        Crear Alerta
-      </Button>
+        <Button
+          variant="outline"
+          className="flex h-24 flex-col items-center justify-center gap-1"
+          onClick={() => handleAction("updateData", "Datos actualizados correctamente")}
+          disabled={loadingStates["updateData"]}
+        >
+          {loadingStates["updateData"] ? (
+            <RefreshCw className="h-5 w-5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-5 w-5" />
+          )}
+          <span className="text-xs">Actualizar datos</span>
+        </Button>
 
-      <Button
-        variant="outline"
-        className="w-full justify-start"
-        onClick={() => handleAction("exportar-datos")}
-        disabled={isLoading === "exportar-datos"}
-      >
-        {isLoading === "exportar-datos" ? (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : (
-          <Download className="mr-2 h-4 w-4" />
-        )}
-        Exportar Datos
-      </Button>
+        <Button
+          variant="outline"
+          className="flex h-24 flex-col items-center justify-center gap-1"
+          onClick={() => handleAction("exportData", "Datos exportados correctamente")}
+          disabled={loadingStates["exportData"]}
+        >
+          {loadingStates["exportData"] ? (
+            <RefreshCw className="h-5 w-5 animate-spin" />
+          ) : (
+            <Download className="h-5 w-5" />
+          )}
+          <span className="text-xs">Exportar datos</span>
+        </Button>
 
-      <Button
-        variant="outline"
-        className="w-full justify-start"
-        onClick={() => handleAction("compartir-dashboard")}
-        disabled={isLoading === "compartir-dashboard"}
-      >
-        {isLoading === "compartir-dashboard" ? (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : (
-          <Share2 className="mr-2 h-4 w-4" />
-        )}
-        Compartir Dashboard
-      </Button>
-    </div>
+        <Button variant="outline" className="flex h-24 flex-col items-center justify-center gap-1" asChild>
+          <Link href="/dashboard/analytics">
+            <BarChart3 className="h-5 w-5" />
+            <span className="text-xs">Ver análisis</span>
+          </Link>
+        </Button>
+
+        <Button
+          variant="outline"
+          className="flex h-24 flex-col items-center justify-center gap-1"
+          onClick={() => handleAction("importData", "Datos importados correctamente")}
+          disabled={loadingStates["importData"]}
+        >
+          {loadingStates["importData"] ? (
+            <RefreshCw className="h-5 w-5 animate-spin" />
+          ) : (
+            <Upload className="h-5 w-5" />
+          )}
+          <span className="text-xs">Importar datos</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          className="flex h-24 flex-col items-center justify-center gap-1"
+          onClick={() => handleAction("checkAlerts", "Alertas verificadas")}
+          disabled={loadingStates["checkAlerts"]}
+        >
+          {loadingStates["checkAlerts"] ? (
+            <RefreshCw className="h-5 w-5 animate-spin" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <span className="text-xs">Ver alertas</span>
+        </Button>
+
+        <Button variant="outline" className="flex h-24 flex-col items-center justify-center gap-1" asChild>
+          <Link href="/dashboard/settings">
+            <Settings className="h-5 w-5" />
+            <span className="text-xs">Configuración</span>
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
   )
 }
