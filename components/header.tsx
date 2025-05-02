@@ -4,7 +4,6 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { motion } from "framer-motion"
 
 export default function Header() {
@@ -17,6 +16,7 @@ export default function Header() {
     { href: "#casos-uso", label: "Casos de Uso" },
     { href: "/demo", label: "Demos Interactivas" },
     { href: "#contacto", label: "Contacto" },
+    { href: "/dashboard", label: "Dashboard" }, // Asegurarse de que el enlace al dashboard sea "/dashboard"
   ]
 
   return (
@@ -25,15 +25,20 @@ export default function Header() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
+      suppressHydrationWarning
     >
-      <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 mx-auto">
-        <div className="flex items-center gap-2">
+      <div
+        className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 mx-auto"
+        suppressHydrationWarning
+      >
+        <div className="flex items-center gap-2" suppressHydrationWarning>
           <Link href="/" className="flex items-center">
             <motion.span
               className="text-2xl font-bold bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
+              suppressHydrationWarning
             >
               RenewAI
             </motion.span>
@@ -41,13 +46,14 @@ export default function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-6">
+        <nav className="hidden md:flex gap-6" suppressHydrationWarning>
           {navItems.map((item, index) => (
             <motion.div
               key={item.href}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+              suppressHydrationWarning
             >
               <Link href={item.href} className="text-sm font-medium transition-colors hover:text-primary">
                 {item.label}
@@ -56,12 +62,12 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-4">
-          <ThemeToggle />
+        <div className="hidden md:flex items-center gap-4" suppressHydrationWarning>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.7 }}
+            suppressHydrationWarning
           >
             <Button
               asChild
@@ -74,8 +80,7 @@ export default function Header() {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center gap-2">
-          <ThemeToggle />
+        <div className="md:hidden flex items-center gap-2" suppressHydrationWarning>
           <button
             className="md:hidden p-2 rounded-md hover:bg-gray-800/50 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -99,14 +104,16 @@ export default function Header() {
           transition={{ duration: 0.3 }}
           role="navigation"
           aria-label="Menú móvil"
+          suppressHydrationWarning
         >
-          <nav className="flex flex-col gap-6 text-center">
+          <nav className="flex flex-col gap-6 text-center" suppressHydrationWarning>
             {navItems.map((item, index) => (
               <motion.div
                 key={item.href}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 * index }}
+                suppressHydrationWarning
               >
                 <Link
                   href={item.href}
@@ -121,6 +128,7 @@ export default function Header() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.5 }}
+              suppressHydrationWarning
             >
               <Button
                 asChild

@@ -52,11 +52,6 @@ export default function LoginForm({ showRegisteredMessage = false, redirectTo = 
     }
   }
 
-  const fillAdminCredentials = () => {
-    setEmail("admin")
-    setPassword("admin")
-  }
-
   const fillGuestCredentials = () => {
     setEmail("invitado")
     setPassword("invitado")
@@ -108,13 +103,10 @@ export default function LoginForm({ showRegisteredMessage = false, redirectTo = 
 
       <div className="flex flex-col space-y-4">
         <div className="text-center text-sm">
-          <p className="text-gray-500 dark:text-gray-400 mb-2">Accesos rápidos:</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-2">Acceso rápido:</p>
           <div className="flex flex-col space-y-2">
-            <Button variant="outline" onClick={fillAdminCredentials} size="sm" className="text-xs">
-              Usar credenciales de administrador (admin/admin)
-            </Button>
             <Button variant="outline" onClick={fillGuestCredentials} size="sm" className="text-xs">
-              Usar credenciales de invitado (invitado/invitado)
+              Usar credenciales de invitado
             </Button>
           </div>
         </div>

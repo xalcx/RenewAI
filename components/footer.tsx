@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Facebook, Twitter, Linkedin, Instagram } from "lucide-react"
+import { Linkedin, Instagram } from "lucide-react"
 import { AnimatedSection } from "@/components/ui/animated-section"
 import { motion } from "framer-motion"
 import React from "react"
@@ -24,13 +24,24 @@ function Footer() {
             </p>
             <div className="flex space-x-4">
               {[
-                { icon: <Facebook className="h-5 w-5" />, label: "Facebook" },
-                { icon: <Twitter className="h-5 w-5" />, label: "Twitter" },
-                { icon: <Linkedin className="h-5 w-5" />, label: "LinkedIn" },
-                { icon: <Instagram className="h-5 w-5" />, label: "Instagram" },
+                {
+                  icon: <Linkedin className="h-5 w-5" />,
+                  label: "LinkedIn",
+                  href: "https://www.linkedin.com/company/renewaitech/",
+                },
+                {
+                  icon: <Instagram className="h-5 w-5" />,
+                  label: "Instagram",
+                  href: "https://www.instagram.com/renewai.tech/",
+                },
               ].map((social, index) => (
                 <motion.div key={social.label} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
-                  <Link href="#" className="hover:text-white transition-colors">
+                  <Link
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
                     {social.icon}
                     <span className="sr-only">{social.label}</span>
                   </Link>

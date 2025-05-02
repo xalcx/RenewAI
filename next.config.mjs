@@ -7,6 +7,8 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false, // Desactivar modo estricto para reducir problemas de hidratación
+  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -14,7 +16,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["images.unsplash.com", "intelliarts-wind-turbine-anomaly-detection.hf.space", "placehold.co"],
+    domains: ['images.unsplash.com', 'v0.blob.com', "intelliarts-wind-turbine-anomaly-detection.hf.space", "placehold.co"],
     remotePatterns: [
       {
         protocol: "https",
@@ -23,10 +25,19 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
+  // Desactivar optimizaciones que podrían causar problemas de hidratación
+  optimizeFonts: false,
+  compiler: {
+    // Desactivar eliminación de console.log en producción
+    removeConsole: false,
+  },
   experimental: {
-    webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
+    // Desactivar características experimentales que podrían causar problemas
+    webpackBuildWorker: false,
+    parallelServerBuildTraces: false,
+    parallelServerCompiles: false,
+    // Configuración para minimizar problemas de hidratación
+    strictNextHead: false,
   },
 }
 
