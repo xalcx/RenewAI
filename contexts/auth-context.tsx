@@ -6,12 +6,15 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import type { User } from "@supabase/supabase-js"
+import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 type AuthContextType = {
   user: User | null
   loading: boolean
   isAdmin: boolean
   isGuest: boolean
+  firebaseUser: any | null
   signUp: (
     email: string,
     password: string,
@@ -26,6 +29,11 @@ type AuthContextType = {
     error: any | null
     success: boolean
   }>
+  signInWithGoogle: () => Promise<{
+    success: boolean
+    error?: any
+    user?: any
+  }>
   signOut: () => Promise<void>
 }
 
@@ -33,6 +41,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [firebaseUser, setFirebaseUser] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isGuest, setIsGuest] = useState(false)
@@ -78,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getUser()
 
-    // Escuchar cambios en la autenticación
+    // Escuchar cambios en la autenticación de Supabase
     try {
       const {
         data: { subscription },
@@ -86,8 +95,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user || null)
       })
 
+      // Escuchar cambios en la autenticación de Firebase
+      const unsubscribeFirebase = onAuthStateChanged(auth, (currentUser) => {
+        setFirebaseUser(currentUser)
+      })
+
       return () => {
         subscription.unsubscribe()
+        unsubscribeFirebase()
       }
     } catch (error) {
       console.error("Error al configurar el listener de autenticación:", error)
@@ -171,6 +186,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      return { success: true, user: result.user }
+    } catch (error) {
+      console.error("Error al iniciar sesión con Google:", error)
+      return { success: false, error }
+    }
+  }
+
   const signOut = async () => {
     try {
       // Limpiar sesiones de administrador e invitado
@@ -178,6 +204,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("guestSession")
       setIsAdmin(false)
       setIsGuest(false)
+
+      // Cerrar sesión en Firebase si hay un usuario
+      if (firebaseUser) {
+        await auth.signOut()
+      }
 
       // Cerrar sesión en Supabase si está disponible
       if (supabase.auth) {
@@ -192,7 +223,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, isGuest, signUp, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAdmin,
+        isGuest,
+        firebaseUser,
+        signUp,
+        signIn,
+        signInWithGoogle,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

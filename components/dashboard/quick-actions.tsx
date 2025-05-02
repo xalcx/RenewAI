@@ -1,88 +1,146 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Plus, FileText, AlertTriangle, Download, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Upload, FileText, BarChart3, AlertCircle, Settings, PlusCircle } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
 
 export function QuickActions() {
-  const actions = [
-    {
-      icon: Upload,
-      label: "Analizar Turbina",
-      description: "Subir imagen para análisis",
-      href: "/demo/upload",
-      color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-100 dark:bg-blue-900/30",
-    },
-    {
-      icon: FileText,
-      label: "Generar Informe",
-      description: "Crear informe personalizado",
-      href: "#",
-      color: "text-green-600 dark:text-green-400",
-      bgColor: "bg-green-100 dark:bg-green-900/30",
-    },
-    {
-      icon: BarChart3,
-      label: "Ver Estadísticas",
-      description: "Análisis de rendimiento",
-      href: "#",
-      color: "text-purple-600 dark:text-purple-400",
-      bgColor: "bg-purple-100 dark:bg-purple-900/30",
-    },
-    {
-      icon: AlertCircle,
-      label: "Alertas",
-      description: "Gestionar notificaciones",
-      href: "#",
-      color: "text-yellow-600 dark:text-yellow-400",
-      bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
-    },
-    {
-      icon: Settings,
-      label: "Configuración",
-      description: "Ajustes de la plataforma",
-      href: "#",
-      color: "text-gray-600 dark:text-gray-400",
-      bgColor: "bg-gray-100 dark:bg-gray-800",
-    },
-    {
-      icon: PlusCircle,
-      label: "Nuevo Proyecto",
-      description: "Crear proyecto",
-      href: "#",
-      color: "text-indigo-600 dark:text-indigo-400",
-      bgColor: "bg-indigo-100 dark:bg-indigo-900/30",
-    },
-  ]
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState<string | null>(null)
+
+  const handleAction = async (action: string, route?: string) => {
+    setIsLoading(action)
+
+    try {
+      // Simulamos una acción asíncrona
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      if (route) {
+        router.push(route)
+      } else {
+        // Acciones específicas según el botón
+        switch (action) {
+          case "nuevo-proyecto":
+            toast({
+              title: "Nuevo proyecto",
+              description: "Formulario de nuevo proyecto abierto",
+            })
+            break
+          case "generar-informe":
+            toast({
+              title: "Informe generado",
+              description: "El informe se ha generado correctamente",
+            })
+            break
+          case "crear-alerta":
+            toast({
+              title: "Nueva alerta",
+              description: "Configuración de alerta iniciada",
+            })
+            break
+          case "exportar-datos":
+            toast({
+              title: "Exportación iniciada",
+              description: "Los datos se están exportando",
+            })
+            break
+          case "compartir-dashboard":
+            toast({
+              title: "Compartir dashboard",
+              description: "Opciones de compartir abiertas",
+            })
+            break
+          default:
+            toast({
+              title: "Acción ejecutada",
+              description: `Has ejecutado la acción: ${action}`,
+            })
+        }
+      }
+    } catch (error) {
+      console.error(`Error al ejecutar la acción ${action}:`, error)
+      toast({
+        title: "Error",
+        description: "No se pudo completar la acción",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(null)
+    }
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Acciones Rápidas</CardTitle>
-        <CardDescription>Accesos directos a funciones principales</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          {actions.map((action, i) => (
-            <Button
-              key={i}
-              variant="outline"
-              className="h-auto flex flex-col items-center justify-center p-4 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-              asChild
-            >
-              <Link href={action.href}>
-                <div
-                  className={`h-10 w-10 rounded-full ${action.bgColor} ${action.color} flex items-center justify-center mb-2`}
-                >
-                  <action.icon className="h-5 w-5" />
-                </div>
-                <span className="font-medium text-sm">{action.label}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">{action.description}</span>
-              </Link>
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <Button
+        className="w-full justify-start"
+        onClick={() => handleAction("nuevo-proyecto")}
+        disabled={isLoading === "nuevo-proyecto"}
+      >
+        {isLoading === "nuevo-proyecto" ? (
+          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <Plus className="mr-2 h-4 w-4" />
+        )}
+        Nuevo Proyecto
+      </Button>
+
+      <Button
+        variant="outline"
+        className="w-full justify-start"
+        onClick={() => handleAction("generar-informe", "/dashboard/reports")}
+        disabled={isLoading === "generar-informe"}
+      >
+        {isLoading === "generar-informe" ? (
+          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <FileText className="mr-2 h-4 w-4" />
+        )}
+        Generar Informe
+      </Button>
+
+      <Button
+        variant="outline"
+        className="w-full justify-start"
+        onClick={() => handleAction("crear-alerta", "/dashboard/alerts")}
+        disabled={isLoading === "crear-alerta"}
+      >
+        {isLoading === "crear-alerta" ? (
+          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <AlertTriangle className="mr-2 h-4 w-4" />
+        )}
+        Crear Alerta
+      </Button>
+
+      <Button
+        variant="outline"
+        className="w-full justify-start"
+        onClick={() => handleAction("exportar-datos")}
+        disabled={isLoading === "exportar-datos"}
+      >
+        {isLoading === "exportar-datos" ? (
+          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <Download className="mr-2 h-4 w-4" />
+        )}
+        Exportar Datos
+      </Button>
+
+      <Button
+        variant="outline"
+        className="w-full justify-start"
+        onClick={() => handleAction("compartir-dashboard")}
+        disabled={isLoading === "compartir-dashboard"}
+      >
+        {isLoading === "compartir-dashboard" ? (
+          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <Share2 className="mr-2 h-4 w-4" />
+        )}
+        Compartir Dashboard
+      </Button>
+    </div>
   )
 }

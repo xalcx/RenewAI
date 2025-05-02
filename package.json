@@ -63,7 +63,8 @@
     "framer-motion": "latest",
     "leaflet": "latest",
     "react-chartjs-2": "latest",
-    "@supabase/supabase-js": "latest"
+    "@supabase/supabase-js": "latest",
+    "firebase": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
+import { useAuth } from "@/contexts/auth-context"
 
 export function FeedbackWidget() {
   const [isOpen, setIsOpen] = useState(false)
@@ -18,6 +19,10 @@ export function FeedbackWidget() {
   const [feedbackText, setFeedbackText] = useState("")
   const [title, setTitle] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { user, firebaseUser } = useAuth()
+
+  // Obtener información del usuario para el feedback
+  const userEmail = firebaseUser?.email || user?.email || "anónimo"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,18 +38,41 @@ export function FeedbackWidget() {
 
     setIsSubmitting(true)
 
-    // Simulación de envío
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Aquí podríamos enviar el feedback a Firebase o a una API
+      // Por ahora, simulamos el envío
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    toast({
-      title: "¡Gracias por tu feedback!",
-      description: "Tu comentario ha sido enviado con éxito y será revisado por nuestro equipo.",
-    })
+      // Datos que se enviarían
+      const feedbackData = {
+        title: title.trim() || "Sin título",
+        type: feedbackType,
+        description: feedbackText,
+        userEmail,
+        timestamp: new Date().toISOString(),
+      }
 
-    setIsSubmitting(false)
-    setFeedbackText("")
-    setTitle("")
-    setIsOpen(false)
+      console.log("Feedback enviado:", feedbackData)
+
+      toast({
+        title: "¡Gracias por tu feedback!",
+        description: "Tu comentario ha sido enviado con éxito y será revisado por nuestro equipo.",
+      })
+
+      // Limpiar el formulario
+      setFeedbackText("")
+      setTitle("")
+      setIsOpen(false)
+    } catch (error) {
+      console.error("Error al enviar feedback:", error)
+      toast({
+        title: "Error al enviar",
+        description: "Ha ocurrido un error al enviar tu feedback. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

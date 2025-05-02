@@ -1,4 +1,4 @@
-import ProtectedRoute from "@/components/auth/protected-route"
+import { AuthProtectedRoute } from "@/components/auth/auth-protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { RecentProjects } from "@/components/dashboard/recent-projects"
@@ -20,10 +20,11 @@ import { FeedbackWidget } from "@/components/dashboard/feedback-widget"
 import { KPIDashboard } from "@/components/dashboard/kpi-dashboard"
 import { ActivityFeed } from "@/components/dashboard/activity-feed"
 import { FavoriteProjects } from "@/components/dashboard/favorite-projects"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute>
+    <AuthProtectedRoute>
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <SidebarNavigation />
 
@@ -169,7 +170,10 @@ export default function DashboardPage() {
 
         {/* Widget de Feedback */}
         <FeedbackWidget />
+
+        {/* Toaster para notificaciones */}
+        <Toaster />
       </div>
-    </ProtectedRoute>
+    </AuthProtectedRoute>
   )
 }

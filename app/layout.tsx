@@ -2,7 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Roboto, Roboto_Mono } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/contexts/auth-context"
 import ScrollToTop from "@/components/scroll-to-top"
 import { baseMetadata } from "./metadata"
 import { Providers } from "./providers"
@@ -44,12 +43,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
         <Providers>
-          <AuthProvider>
-            <div className="relative flex min-h-screen flex-col">
-              {children}
-              <ScrollToTop />
-            </div>
-          </AuthProvider>
+          <div className="relative flex min-h-screen flex-col">
+            {children}
+            <ScrollToTop />
+          </div>
         </Providers>
       </body>
     </html>
