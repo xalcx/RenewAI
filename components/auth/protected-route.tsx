@@ -1,4 +1,4 @@
-"\"use client"
+"use client"
 
 import type React from "react"
 import { useEffect } from "react"
@@ -37,5 +37,3 @@ const ProtectedRoute = ({ children, redirectTo = "/login" }: ProtectedRouteProps
 }
 
 export default ProtectedRoute
-\
-"
