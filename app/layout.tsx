@@ -21,7 +21,15 @@ const robotoMono = Roboto_Mono({
   variable: "--font-mono",
 })
 
-export const metadata: Metadata = baseMetadata
+export const metadata: Metadata = {
+  ...baseMetadata,
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+    generator: 'v0.dev'
+}
 
 export default function RootLayout({
   children,
