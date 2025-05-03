@@ -47,9 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isGuest, setIsGuest] = useState(false)
   const router = useRouter()
 
-  // Verificar sesión al cargar
   useEffect(() => {
-    const checkSession = async () => {
+    // Verificar sesión actual
+    const getUser = async () => {
       try {
         // Verificar si hay una sesión de administrador o invitado
         const adminSession = localStorage.getItem("adminSession")
@@ -57,12 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (adminSession === "true") {
           setIsAdmin(true)
+          setUser({ id: "admin", email: "admin@example.com" } as User)
           setLoading(false)
           return
         }
 
         if (guestSession === "true") {
           setIsGuest(true)
+          setUser({ id: "guest", email: "guest@example.com" } as User)
           setLoading(false)
           return
         }
@@ -85,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    checkSession()
+    getUser()
 
     // Escuchar cambios en la autenticación de Supabase
     try {
@@ -98,23 +100,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Escuchar cambios en la autenticación de Firebase
       const unsubscribeFirebase = onAuthStateChanged(auth, (currentUser) => {
         setFirebaseUser(currentUser)
+        if (currentUser) {
+          setUser({ id: currentUser.uid, email: currentUser.email } as User)
+        }
       })
-
-      // Escuchar cambios en localStorage para sesiones de invitado y admin
-      const handleStorageChange = () => {
-        const adminSession = localStorage.getItem("adminSession")
-        const guestSession = localStorage.getItem("guestSession")
-
-        setIsAdmin(adminSession === "true")
-        setIsGuest(guestSession === "true")
-      }
-
-      window.addEventListener("storage", handleStorageChange)
 
       return () => {
         subscription.unsubscribe()
         unsubscribeFirebase()
-        window.removeEventListener("storage", handleStorageChange)
       }
     } catch (error) {
       console.error("Error al configurar el listener de autenticación:", error)
@@ -159,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (email === "admin" && password === "admin") {
         localStorage.setItem("adminSession", "true")
         setIsAdmin(true)
+        setUser({ id: "admin", email: "admin@example.com" } as User)
         return { error: null, success: true }
       }
 
@@ -166,6 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (email === "invitado" && password === "invitado") {
         localStorage.setItem("guestSession", "true")
         setIsGuest(true)
+        setUser({ id: "guest", email: "guest@example.com" } as User)
         return { error: null, success: true }
       }
 
@@ -202,6 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(auth, provider)
+      setUser({ id: result.user.uid, email: result.user.email } as User)
       return { success: true, user: result.user }
     } catch (error) {
       console.error("Error al iniciar sesión con Google:", error)
@@ -216,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("guestSession")
       setIsAdmin(false)
       setIsGuest(false)
+      setUser(null)
 
       // Cerrar sesión en Firebase si hay un usuario
       if (firebaseUser) {
