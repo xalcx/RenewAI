@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { motion } from "framer-motion"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -63,6 +64,9 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4" suppressHydrationWarning>
+          {/* Añadir el botón de cambio de tema */}
+          <ThemeToggle />
+
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -81,6 +85,9 @@ export default function Header() {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-2" suppressHydrationWarning>
+          {/* Añadir el botón de cambio de tema en móvil */}
+          <ThemeToggle />
+
           <button
             className="md:hidden p-2 rounded-md hover:bg-gray-800/50 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
