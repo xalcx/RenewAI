@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Verificar sesión al cargar
   useEffect(() => {
-    const getUser = async () => {
+    const checkSession = async () => {
       try {
         // Verificar si hay una sesión de administrador o invitado
         const adminSession = localStorage.getItem("adminSession")
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    getUser()
+    checkSession()
 
     // Escuchar cambios en la autenticación de Supabase
     try {
@@ -100,9 +100,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setFirebaseUser(currentUser)
       })
 
+      // Escuchar cambios en localStorage para sesiones de invitado y admin
+      const handleStorageChange = () => {
+        const adminSession = localStorage.getItem("adminSession")
+        const guestSession = localStorage.getItem("guestSession")
+
+        setIsAdmin(adminSession === "true")
+        setIsGuest(guestSession === "true")
+      }
+
+      window.addEventListener("storage", handleStorageChange)
+
       return () => {
         subscription.unsubscribe()
         unsubscribeFirebase()
+        window.removeEventListener("storage", handleStorageChange)
       }
     } catch (error) {
       console.error("Error al configurar el listener de autenticación:", error)
@@ -154,10 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (email === "invitado" && password === "invitado") {
         localStorage.setItem("guestSession", "true")
         setIsGuest(true)
-
-        // Crear un pequeño retraso para asegurar que el estado se actualice
-        await new Promise((resolve) => setTimeout(resolve, 100))
-
         return { error: null, success: true }
       }
 
