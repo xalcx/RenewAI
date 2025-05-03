@@ -6,18 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageSelector } from "@/components/language-selector"
+import { useLanguage } from "@/contexts/language-context"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { t } = useLanguage()
 
   // Actualizado para reflejar que la demo de turbinas está ahora en la sección de demos interactivas
   const navItems = [
-    { href: "#beneficios", label: "Beneficios" },
-    { href: "#como-funciona", label: "Cómo Funciona" },
-    { href: "#casos-uso", label: "Casos de Uso" },
-    { href: "/demo", label: "Demos Interactivas" },
-    { href: "#contacto", label: "Contacto" },
-    { href: "/dashboard", label: "Dashboard" }, // Asegurarse de que el enlace al dashboard sea "/dashboard"
+    { href: "#beneficios", label: t("benefits") },
+    { href: "#como-funciona", label: t("how-it-works") },
+    { href: "#casos-uso", label: t("use-cases") },
+    { href: "/demo", label: t("interactive-demos") },
+    { href: "#contacto", label: t("contact") },
+    { href: "/dashboard", label: t("dashboard") },
   ]
 
   return (
@@ -64,7 +67,10 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4" suppressHydrationWarning>
-          {/* Añadir el botón de cambio de tema */}
+          {/* Selector de idioma */}
+          <LanguageSelector />
+
+          {/* Selector de tema */}
           <ThemeToggle />
 
           <motion.div
@@ -78,14 +84,17 @@ export default function Header() {
               variant="default"
               className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
             >
-              <Link href="#contacto">Solicita una Demo</Link>
+              <Link href="#contacto">{t("request-demo")}</Link>
             </Button>
           </motion.div>
         </div>
 
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-2" suppressHydrationWarning>
-          {/* Añadir el botón de cambio de tema en móvil */}
+          {/* Selector de idioma */}
+          <LanguageSelector />
+
+          {/* Selector de tema */}
           <ThemeToggle />
 
           <button
@@ -143,7 +152,7 @@ export default function Header() {
                 className="mt-4 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
               >
                 <Link href="#contacto" onClick={() => setIsMenuOpen(false)}>
-                  Solicita una Demo
+                  {t("request-demo")}
                 </Link>
               </Button>
             </motion.div>
