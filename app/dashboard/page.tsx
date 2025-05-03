@@ -33,17 +33,21 @@ import { Input } from "@/components/ui/input"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export default function DashboardPage() {
-  const { user, loading, signIn } = useAuth()
+  const { user, loading, signIn, isGuest, isAdmin, firebaseUser } = useAuth()
   const router = useRouter()
   const [isClient, setIsClient] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [forceRefresh, setForceRefresh] = useState(0)
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // Determinar si el usuario está autenticado (cualquier tipo de autenticación)
+  const isAuthenticated = !!user || isGuest || isAdmin || !!firebaseUser
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,6 +59,9 @@ export default function DashboardPage() {
 
       if (error) {
         setError(error.message || "Credenciales incorrectas")
+      } else if (success) {
+        // Forzar actualización del componente
+        setForceRefresh((prev) => prev + 1)
       }
     } catch (err) {
       console.error("Error inesperado:", err)
@@ -64,9 +71,30 @@ export default function DashboardPage() {
     }
   }
 
-  const fillGuestCredentials = () => {
+  const loginAsGuest = async () => {
     setEmail("invitado")
     setPassword("invitado")
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      const { error, success } = await signIn("invitado", "invitado")
+
+      if (error) {
+        setError(error.message || "Error al iniciar sesión como invitado")
+      } else if (success) {
+        // Forzar actualización del componente
+        setForceRefresh((prev) => prev + 1)
+
+        // Recargar la página para asegurar que se apliquen todos los cambios de estado
+        window.location.href = "/dashboard"
+      }
+    } catch (err) {
+      console.error("Error inesperado:", err)
+      setError("Ocurrió un error inesperado. Por favor, intente más tarde.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Si está cargando, mostrar un indicador de carga
@@ -82,7 +110,7 @@ export default function DashboardPage() {
   }
 
   // Si no hay usuario autenticado, mostrar la pantalla de login
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto flex flex-1 flex-col items-center justify-center px-4 py-12">
@@ -99,6 +127,32 @@ export default function DashboardPage() {
                 {error}
               </div>
             )}
+
+            <div className="mt-6 flex flex-col space-y-4">
+              <div className="text-center">
+                <Button
+                  onClick={loginAsGuest}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  disabled={isLoading}
+                >
+                  {isLoading ? <LoadingSpinner size="sm" /> : "Entrar como Invitado"}
+                </Button>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Acceso rápido sin necesidad de registro</p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                    O inicia sesión con
+                  </span>
+                </div>
+              </div>
+            </div>
 
             <form onSubmit={handleLogin} className="mt-6 space-y-6">
               <div>
@@ -150,15 +204,6 @@ export default function DashboardPage() {
 
               <div className="mt-6">
                 <FirebaseGoogleLogin />
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col space-y-4">
-              <div className="text-center text-sm">
-                <p className="text-gray-500 dark:text-gray-400 mb-2">Acceso rápido:</p>
-                <Button variant="outline" onClick={fillGuestCredentials} size="sm" className="text-xs w-full">
-                  Usar credenciales de invitado
-                </Button>
               </div>
             </div>
 

@@ -47,8 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isGuest, setIsGuest] = useState(false)
   const router = useRouter()
 
+  // Verificar sesión al cargar
   useEffect(() => {
-    // Verificar sesión actual
     const getUser = async () => {
       try {
         // Verificar si hay una sesión de administrador o invitado
@@ -154,6 +154,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (email === "invitado" && password === "invitado") {
         localStorage.setItem("guestSession", "true")
         setIsGuest(true)
+
+        // Crear un pequeño retraso para asegurar que el estado se actualice
+        await new Promise((resolve) => setTimeout(resolve, 100))
+
         return { error: null, success: true }
       }
 
