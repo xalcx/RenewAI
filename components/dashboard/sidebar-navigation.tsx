@@ -17,8 +17,11 @@ import {
   FileText,
   ChevronRight,
   ChevronDown,
+  Search,
+  Activity,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/contexts/language-context"
 
 interface SidebarItemProps {
   icon: React.ReactNode
@@ -76,7 +79,8 @@ function SidebarItem({
 export function SidebarNavigation() {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [expandedSection, setExpandedSection] = useState<string | null>("analytics") // Expandir análisis por defecto
+  const { t } = useLanguage()
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section)
@@ -122,7 +126,7 @@ export function SidebarNavigation() {
       <nav className="flex-1 overflow-y-auto p-2 space-y-1">
         <SidebarItem
           icon={<LayoutDashboard size={20} />}
-          title="Panel Principal"
+          title={t("main-panel")}
           href="/dashboard"
           isActive={pathname === "/dashboard"}
           isCollapsed={isCollapsed}
@@ -130,7 +134,7 @@ export function SidebarNavigation() {
 
         <SidebarItem
           icon={<Wind size={20} />}
-          title="Proyectos"
+          title={t("projects")}
           href="#"
           hasSubItems={!isCollapsed}
           isExpanded={expandedSection === "projects"}
@@ -150,7 +154,7 @@ export function SidebarNavigation() {
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
               )}
             >
-              Activos
+              {t("active-projects")}
             </Link>
             <Link
               href="/dashboard/projects/planned"
@@ -161,7 +165,7 @@ export function SidebarNavigation() {
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
               )}
             >
-              Planificados
+              {t("planned-projects")}
             </Link>
             <Link
               href="/dashboard/projects/completed"
@@ -172,22 +176,61 @@ export function SidebarNavigation() {
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
               )}
             >
-              Completados
+              {t("completed-projects")}
             </Link>
           </div>
         )}
 
         <SidebarItem
           icon={<BarChart2 size={20} />}
-          title="Análisis"
-          href="/dashboard/analytics"
-          isActive={pathname === "/dashboard/analytics"}
+          title={t("analytics")}
+          href="#"
+          hasSubItems={!isCollapsed}
+          isExpanded={expandedSection === "analytics"}
+          onClick={() => !isCollapsed && toggleSection("analytics")}
           isCollapsed={isCollapsed}
+          isActive={pathname.includes("/dashboard/analytics") || pathname.includes("/dashboard/turbine-detection")}
         />
+
+        {expandedSection === "analytics" && !isCollapsed && (
+          <div className="ml-9 space-y-1 mt-1">
+            <Link
+              href="/dashboard/analytics"
+              className={cn(
+                "block py-1.5 px-3 rounded-md text-sm font-medium transition-colors",
+                pathname === "/dashboard/analytics"
+                  ? "bg-green-50 text-green-900 dark:bg-green-900/20 dark:text-green-50"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+              )}
+            >
+              <div className="flex items-center">
+                <Activity size={16} className="mr-2" />
+                <span>{t("general-analytics")}</span>
+              </div>
+            </Link>
+            <Link
+              href="/dashboard/turbine-detection"
+              className={cn(
+                "block py-1.5 px-3 rounded-md text-sm font-medium transition-colors",
+                pathname === "/dashboard/turbine-detection"
+                  ? "bg-green-50 text-green-900 dark:bg-green-900/20 dark:text-green-50"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+              )}
+            >
+              <div className="flex items-center">
+                <Search size={16} className="mr-2" />
+                <span>{t("turbine-damage-detection")}</span>
+                <span className="ml-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-medium px-1.5 py-0.5 rounded-full">
+                  {t("new")}
+                </span>
+              </div>
+            </Link>
+          </div>
+        )}
 
         <SidebarItem
           icon={<Map size={20} />}
-          title="Mapas"
+          title={t("maps")}
           href="/dashboard/maps"
           isActive={pathname === "/dashboard/maps"}
           isCollapsed={isCollapsed}
@@ -195,7 +238,7 @@ export function SidebarNavigation() {
 
         <SidebarItem
           icon={<AlertTriangle size={20} />}
-          title="Alertas"
+          title={t("alerts")}
           href="/dashboard/alerts"
           isActive={pathname === "/dashboard/alerts"}
           isCollapsed={isCollapsed}
@@ -204,7 +247,7 @@ export function SidebarNavigation() {
 
         <SidebarItem
           icon={<Calendar size={20} />}
-          title="Calendario"
+          title={t("calendar")}
           href="/dashboard/calendar"
           isActive={pathname === "/dashboard/calendar"}
           isCollapsed={isCollapsed}
@@ -212,7 +255,7 @@ export function SidebarNavigation() {
 
         <SidebarItem
           icon={<Users size={20} />}
-          title="Equipo"
+          title={t("team")}
           href="/dashboard/team"
           isActive={pathname === "/dashboard/team"}
           isCollapsed={isCollapsed}
@@ -220,7 +263,7 @@ export function SidebarNavigation() {
 
         <SidebarItem
           icon={<FileText size={20} />}
-          title="Informes"
+          title={t("reports")}
           href="/dashboard/reports"
           isActive={pathname === "/dashboard/reports"}
           isCollapsed={isCollapsed}
@@ -230,7 +273,7 @@ export function SidebarNavigation() {
       <div className="p-2 border-t border-gray-200 dark:border-gray-800">
         <SidebarItem
           icon={<Settings size={20} />}
-          title="Configuración"
+          title={t("settings")}
           href="/dashboard/settings"
           isActive={pathname === "/dashboard/settings"}
           isCollapsed={isCollapsed}

@@ -64,7 +64,8 @@
     "leaflet": "latest",
     "react-chartjs-2": "latest",
     "@supabase/supabase-js": "latest",
-    "firebase": "latest"
+    "firebase": "latest",
+    "axios": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
