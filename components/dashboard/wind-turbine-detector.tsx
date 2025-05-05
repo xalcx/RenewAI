@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import axios from "axios"
-import { Upload, Wind, AlertTriangle, BarChart3, Layers, Zap, X } from "lucide-react"
+import { Upload, Wind, AlertTriangle, BarChart3, Layers, Zap, X, FileDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import jsPDF from "jspdf"
 
 interface DetectionResult {
   fileName: string
@@ -409,6 +410,141 @@ export function WindTurbineDetector() {
     return results.reduce((total, result) => total + result.predictions.length, 0)
   }
 
+  const generatePDF = async () => {
+    if (results.length === 0) return
+
+    setLoading(true)
+    toast({
+      title: t("generatingReport"),
+      description: t("pleaseWait"),
+    })
+
+    try {
+      // Crear un nuevo documento PDF
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      })
+
+      // Añadir título y fecha
+      const title = t("windTurbineDamageReport")
+      const date = new Date().toLocaleDateString()
+      pdf.setFontSize(20)
+      pdf.text(title, 105, 15, { align: "center" })
+      pdf.setFontSize(10)
+      pdf.text(date, 105, 22, { align: "center" })
+
+      // Añadir resumen
+      pdf.setFontSize(14)
+      pdf.text(t("analysisSummary"), 20, 35)
+      pdf.setFontSize(10)
+      pdf.text(`${t("processedImages")}: ${results.length}`, 20, 45)
+      pdf.text(`${t("imagesWithDamage")}: ${getDamagedImagesCount()}`, 20, 52)
+      pdf.text(`${t("totalDamageAreas")}: ${getTotalDamageCount()}`, 20, 59)
+      pdf.text(`${t("detectionModel")}: ${getModelName(selectedModel)}`, 20, 66)
+
+      let yPosition = 80
+
+      // Para cada resultado
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i]
+
+        // Si no hay espacio suficiente en la página actual, añadir una nueva página
+        if (yPosition > 250) {
+          pdf.addPage()
+          yPosition = 20
+        }
+
+        // Añadir título de la imagen
+        pdf.setFontSize(12)
+        pdf.text(`${i + 1}. ${result.fileName}`, 20, yPosition)
+        yPosition += 7
+
+        // Añadir estado de daño
+        pdf.setFontSize(10)
+        if (result.predictions.length > 0) {
+          pdf.setTextColor(220, 53, 69) // Color rojo para daño
+          pdf.text(`${result.predictions.length} ${t("damageDetected")}`, 20, yPosition)
+        } else {
+          pdf.setTextColor(40, 167, 69) // Color verde para sin daño
+          pdf.text(t("noDamage"), 20, yPosition)
+        }
+        pdf.setTextColor(0, 0, 0) // Restaurar color negro
+        yPosition += 10
+
+        // Obtener el canvas de la imagen
+        const canvas = canvasRefs.current.get(result.id)
+        if (canvas) {
+          // Convertir el canvas a imagen
+          const imgData = canvas.toDataURL("image/png")
+
+          // Calcular dimensiones para mantener la proporción
+          const imgWidth = 170
+          const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+          // Añadir imagen al PDF
+          pdf.addImage(imgData, "PNG", 20, yPosition, imgWidth, imgHeight)
+          yPosition += imgHeight + 10
+
+          // Si hay predicciones, añadir detalles
+          if (result.predictions.length > 0) {
+            pdf.setFontSize(11)
+            pdf.text(t("damageDetails"), 20, yPosition)
+            yPosition += 7
+
+            pdf.setFontSize(9)
+            for (let j = 0; j < result.predictions.length; j++) {
+              const pred = result.predictions[j]
+              pdf.text(
+                `• ${t("damageType")}: ${pred.class}, ${t("confidence")}: ${Math.round(pred.confidence * 100)}%`,
+                25,
+                yPosition,
+              )
+              yPosition += 5
+            }
+            yPosition += 5
+          }
+
+          // Añadir espacio entre imágenes
+          yPosition += 10
+
+          // Si no hay espacio suficiente para la siguiente imagen, añadir una nueva página
+          if (i < results.length - 1 && yPosition > 250) {
+            pdf.addPage()
+            yPosition = 20
+          }
+        }
+      }
+
+      // Añadir pie de página
+      const pageCount = pdf.getNumberOfPages()
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i)
+        pdf.setFontSize(8)
+        pdf.text(`RenewAI - ${t("page")} ${i} ${t("of")} ${pageCount}`, 105, 290, { align: "center" })
+      }
+
+      // Guardar el PDF
+      pdf.save(`renewai-turbine-damage-report-${Date.now()}.pdf`)
+
+      toast({
+        title: t("reportGenerated"),
+        description: t("reportDownloadedSuccessfully"),
+        variant: "success",
+      })
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      toast({
+        title: t("error"),
+        description: t("errorGeneratingReport"),
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const getDamagedImagesCount = () => {
     return results.filter((result) => result.predictions.length > 0).length
   }
@@ -656,6 +792,15 @@ export function WindTurbineDetector() {
                 </div>
 
                 <div className="flex justify-center mt-6">
+                  <Button
+                    onClick={generatePDF}
+                    variant="default"
+                    className="mr-2"
+                    disabled={loading || results.length === 0}
+                  >
+                    <FileDown className="mr-2 h-4 w-4" />
+                    {t("downloadReport")}
+                  </Button>
                   <Button
                     onClick={() => {
                       setActiveTab("upload")
